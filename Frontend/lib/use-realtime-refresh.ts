@@ -17,7 +17,12 @@ export function useRealtimeRefresh(tables: string[]): number {
   useEffect(() => {
     const client = supabase;
     if (!client) return;
-    const channel = client.channel(`realtime:${key}`);
+    // Unique per effect run (not just per `key`) - React 18 Strict Mode in
+    // dev mounts effects twice, and Supabase caches channels by topic name,
+    // so reusing the same topic across that mount/cleanup/remount can hand
+    // back an already-subscribed channel and throw when .on() runs after
+    // .subscribe(). A unique topic per run sidesteps the collision entirely.
+    const channel = client.channel(`realtime:${key}:${Math.random().toString(36).slice(2)}`);
     for (const table of key.split(",")) {
       channel.on("postgres_changes", { event: "*", schema: "public", table }, () => setTick((t) => t + 1));
     }
