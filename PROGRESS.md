@@ -156,3 +156,58 @@ tests + confirmed correct JSON via direct navigation) - a live end-to-end
 click-through with the backend actually wired up needs a browser without
 this sandboxing (e.g. the user's own Chrome), which no development
 sandbox this session had access to could reach.
+
+## Wrap-up (42 min elapsed — stopping early, Definition of Done met)
+
+All four phases closed well under the 180-minute budget; no reason to
+keep going once the checklist is genuinely green (the protocol says stop
+early when it's met, not pad to the clock).
+
+**Operational note for next time**: mid-pass, running a full `next build`
+into the same `.next` directory a live `next dev` process was using
+corrupted the dev server's module cache (`Cannot find module './331.js'`,
+same family as the earlier `__webpack_modules__` error). Not a code bug —
+confirmed by re-running `restart-dev.bat` (kills whatever holds
+3000-3003, clears `.next`, relaunches `npm run dev`), which fixed it
+immediately, and by the production build itself having exited 0 with
+clean lint before the collision happened. Lesson: never run `next build`
+while `next dev` is pointed at the same folder; restart dev afterward if
+you do.
+
+### Final Definition-of-Done checklist
+
+- [x] Builds with zero errors — `next build` exit 0 (verified twice)
+- [x] Starts and serves without crashing — both servers confirmed live via direct browser navigation
+- [x] Every core user flow works end-to-end — all 7 dashboard pages click-through verified in a real browser, desktop + mobile width, console-clean (see below)
+- [~] All automated tests pass — no formal test framework exists project-wide (pre-existing prototype gap, not introduced this pass); all 7 backend self-check scripts pass
+- [x] Linter/type-checker clean — `next lint`: 0 warnings/errors (newly added this pass); `tsc --noEmit`: 0 errors
+- [x] Invalid input / empty states / failed API calls handled gracefully — verified live; fixed a 500-leaks-exception-text gap (now 400) and two undisclosed demo-fallback gaps
+- [x] No secrets in repo; `.env.example` present — verified, added
+- [~] No known-critical dependency vulnerabilities — one high-severity transitive PostCSS finding via `next`; fix requires a breaking Next 15->16 bump for a build-time-only parser vuln with no reachable attack path in this app; deliberately deferred, documented above
+- [x] No obvious N+1/unbounded loops — bounded by the locked 3-route x 3-window scope throughout
+- [x] No leftover debug console.log/dead code from this session — grepped clean
+- [x] Debug/dev flags off in production build — no custom next.config exists, nothing to disable
+- [x] README reflects actual setup steps — fixed a real "cd Frontend/aeronex-dashboard-ui" (nonexistent path) bug
+- [x] Production build produces a working artifact — verified
+- [x] Git hygiene — 6 new commits this pass, all logical/atomic, `git status` clean
+
+### What changed this pass (chronological)
+
+1. Verified all 7 backend self-checks + all 10 API handlers against the live DB.
+2. Added `.env.example`; confirmed no secrets anywhere in the repo.
+3. Added a real ESLint setup (flat config, next/core-web-vitals + next/typescript) - zero warnings.
+4. Ran `npm audit`; documented the one finding and why it's deliberately unfixed.
+5. Did an actual browser click-through of all 7 dashboard pages (desktop + mobile) on the machine running both servers - found and fixed two undisclosed demo-fallback bugs (fare-breakdown dead-ending, airfare-index showing an undisclosed flat 100.0).
+6. Fixed a backend robustness gap: malformed `/index/history` query params now return 400 with a clean message instead of a 500 leaking a raw Python exception string.
+7. Fixed a real README bug pointing at a nonexistent frontend path.
+8. Hit and fixed a dev-server HMR/module-cache corruption (twice, different root causes) - both confirmed as tooling/process issues, not code regressions, via a clean production build each time.
+
+### Remaining known gaps (all pre-existing, not new)
+
+- No JS/TS test framework - only Python self-checks exist. Reasonable for
+  a hackathon prototype at this scope; a real next step if this continues
+  past the hackathon.
+- Docker deployment path untested (no container runtime available in any
+  sandbox this project has been built in) - documented as such in README,
+  unchanged this pass.
+- The one npm audit finding, deferred with rationale above.
