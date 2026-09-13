@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 // Minimal hand-rolled SVG line chart - no charting library is installed
 // (see coverage-matrix.tsx's note: this sandbox has no npm-install network
 // access, and a single polyline doesn't need Recharts/Plotly anyway).
@@ -61,8 +63,31 @@ export function LineChart({
             </text>
           </>
         )}
-        <path d={path} fill="none" stroke="hsl(var(--color-accent))" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" className="transition-[d] duration-[1400ms] ease-in-out" />
-        <circle cx={x(series.length - 1)} cy={y(last.value)} r="3.5" className="fill-accent transition-[cy] duration-[1400ms] ease-in-out" />
+        {/* pathLength draws the line in once on mount; the "d" attribute
+            itself (via the CSS transition below) is what animates smoothly
+            when new data points shift the curve afterward - two separate
+            attributes, so the two animations don't fight each other. */}
+        <motion.path
+          d={path}
+          fill="none"
+          stroke="hsl(var(--color-accent))"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          className="transition-[d] duration-[1400ms] ease-in-out"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+        />
+        <motion.circle
+          cx={x(series.length - 1)}
+          cy={y(last.value)}
+          r="3.5"
+          className="fill-accent transition-[cy] duration-[1400ms] ease-in-out"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9, duration: 0.3 }}
+        />
       </svg>
       <div className="mt-1 flex justify-between text-caption text-muted-foreground">
         <span>{series[0].date}</span>

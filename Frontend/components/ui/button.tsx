@@ -1,5 +1,8 @@
+"use client";
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -23,12 +26,22 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<HTMLMotionProps<"button">, "ref">,
     VariantProps<typeof buttonVariants> {}
 
+// whileTap/whileHover give every button in the app the same light "pressable"
+// feedback (a couple percent scale) instead of relying on color-only hover
+// states - one change here covers every Button usage site-wide.
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => (
-    <button ref={ref} className={cn(buttonVariants({ variant, size }), className)} {...props} />
+    <motion.button
+      ref={ref}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.15 }}
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
   )
 );
 Button.displayName = "Button";

@@ -6,7 +6,19 @@ DB layer for the Phase-0 spike — plain stdlib sqlite3, no ORM.
 # don't need an ORM anyway (stdlib does it). Schema matches
 # AeroNex_Architecture.md's Database section so a real Postgres migration
 # later is a straight SQL port, not a redesign.
+#
+# That migration has now happened (see get_connection below): when
+# DATABASE_URL is set, every caller of get_connection() — handlers.py,
+# provenance.py, live_index.py, dgca_ingest.py — transparently gets a
+# Postgres-backed connection instead, with the exact same .execute()/
+# .commit()/.close() shape sqlite3.Connection has. None of those callers
+# changed a single line; only this file grew a second backend. Local dev
+# and every demo()/self-check function stay on SQLite unconditionally
+# (see _PGConnection and the ":memory:" carve-out below) so nothing about
+# day-to-day development or the existing test story changes.
 """
+import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -77,7 +89,7 @@ CREATE TABLE IF NOT EXISTS backtest_results (
 """
 
 
-def get_connection(db_path: Path | str = DB_PATH) -> sqlite3.Connection:
+def _get_sqlite_connection(db_path: Path | str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     # ponytail: the project folder is a network/FUSE-bridged mount (Windows <-
@@ -89,3 +101,84 @@ def get_connection(db_path: Path | str = DB_PATH) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=MEMORY")
     conn.executescript(SCHEMA)
     return conn
+
+
+# --- Postgres path (production, DATABASE_URL set) --------------------------
+#
+# A same-shaped stand-in for sqlite3.Connection, not a general ORM: every
+# caller only ever uses conn.execute(sql, params) -> cursor with
+# .fetchone()/.fetchall()/.lastrowid, plus conn.commit()/.close(). Three
+# sqlite-isms get rewritten in transit so the SQL text itself (written once,
+# for sqlite, throughout handlers.py/provenance.py/live_index.py/
+# dgca_ingest.py) keeps working unmodified against Postgres:
+#   1. `?` positional placeholders -> `%s` (psycopg2's style).
+#   2. `INSERT OR IGNORE INTO` -> `INSERT INTO ... ON CONFLICT DO NOTHING`
+#      (bare DO NOTHING, no target column list, matches sqlite's "ignore on
+#      ANY constraint violation" semantics for both call sites that use it —
+#      routes' and sources' UNIQUE constraints).
+#   3. `INSERT INTO fares (...)` gets `RETURNING id` appended (when not
+#      already present) so `cur.lastrowid` — used exactly once, in
+#      provenance.record_fare — still works; Postgres has no native
+#      lastrowid.
+# Verified against the live Supabase Postgres instance: date(text) casts,
+# multi-column IN (...), JOIN/GROUP BY/AVG/CASE, and all of the above all
+# behave identically to the sqlite originals.
+_INSERT_FARES_RE = re.compile(r"^\s*INSERT\s+INTO\s+fares\b", re.IGNORECASE)
+
+
+class _PGCursor:
+    def __init__(self, cur, lastrowid=None):
+        self._cur = cur
+        self.lastrowid = lastrowid
+
+    def fetchone(self):
+        return self._cur.fetchone()
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
+
+class _PGConnection:
+    def __init__(self, dsn: str):
+        import psycopg2
+        import psycopg2.extras
+
+        self._extras = psycopg2.extras
+        self._conn = psycopg2.connect(dsn)
+
+    def execute(self, sql: str, params=()) -> _PGCursor:
+        pg_sql = sql.replace("?", "%s")
+        if "INSERT OR IGNORE" in pg_sql:
+            pg_sql = pg_sql.replace("INSERT OR IGNORE", "INSERT") + " ON CONFLICT DO NOTHING"
+
+        wants_lastrowid = bool(_INSERT_FARES_RE.match(sql)) and "RETURNING" not in pg_sql.upper()
+        if wants_lastrowid:
+            pg_sql += " RETURNING id"
+
+        cur = self._conn.cursor(cursor_factory=self._extras.RealDictCursor)
+        cur.execute(pg_sql, params)
+
+        lastrowid = None
+        if wants_lastrowid:
+            row = cur.fetchone()
+            lastrowid = row["id"] if row else None
+        return _PGCursor(cur, lastrowid)
+
+    def commit(self) -> None:
+        self._conn.commit()
+
+    def close(self) -> None:
+        self._conn.close()
+
+
+def get_connection(db_path: Path | str = DB_PATH):
+    """Same signature/behavior as before for every existing caller. The one
+    addition: when DATABASE_URL is set AND no explicit db_path override was
+    passed (i.e. this is a real, non-test call), return a Postgres-backed
+    connection instead. Every self-check/demo() function in this codebase
+    explicitly passes ":memory:" and so is unaffected — self-checks always
+    run against isolated SQLite, in prod or not."""
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url and db_path == DB_PATH:
+        return _PGConnection(database_url)
+    return _get_sqlite_connection(db_path)

@@ -50,6 +50,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
+        # Health check for cloud-host readiness/liveness probes - no DB
+        # connection needed, so it stays honest even if the DB is briefly down.
+        if parsed.path in ("/healthz", "/health"):
+            return self._send_json(200, {"status": "ok"})
+
         conn = get_connection()
         try:
             if parsed.path == "/api/v1/index":

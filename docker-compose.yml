@@ -1,14 +1,13 @@
 # Deployment shape per AeroNex_Architecture.md's Deployment section.
 #
-# ponytail: `api` here runs the STDLIB http.server + sqlite backend that
-# actually exists in this repo today (Backend/app/api/server.py), not the
-# FastAPI+PostgreSQL design the architecture doc describes - neither
-# package could be pip-installed while this was built (no PyPI access in
-# either build sandbox). `postgres` is still declared below because it's
-# one env-var swap away once the API layer is ported to FastAPI/SQLAlchemy
-# (Backend/app/db.py's schema already matches these tables) - it just isn't
-# wired to anything yet. Don't `docker compose up` expecting Postgres data
-# to show up in the dashboard until that port happens.
+# `api` runs the stdlib http.server backend (Backend/app/api/server.py).
+# It talks to SQLite by default, or to a real Postgres/Supabase instance
+# when DATABASE_URL is set (see Backend/app/db.py's Postgres path) - set
+# DATABASE_URL in Backend/.env (see Backend/.env.example) to point `api`
+# at Supabase instead of the bundled `postgres` service below. The local
+# `postgres` service here is a convenience for self-hosting without
+# Supabase; either way the schema (Backend/app/db.py's SCHEMA) is a
+# straight port, not a redesign.
 services:
   postgres:
     image: postgres:16-alpine
@@ -27,6 +26,11 @@ services:
   api:
     build:
       context: ./Backend
+    environment:
+      # Unset (default) -> SQLite at Backend/data/aeronex_spike.db. Set this
+      # to a Supabase/Postgres connection string to go real-time/hosted -
+      # see Backend/.env.example and app/db.py's Postgres path.
+      DATABASE_URL: ${DATABASE_URL:-}
     ports:
       - "8000:8000"
     volumes:
@@ -35,9 +39,13 @@ services:
 
   web:
     build:
-      context: ./Frontend/aeronex-dashboard-ui
+      context: ./Frontend
     environment:
       NEXT_PUBLIC_API_BASE: http://localhost:8000
+      # Only needed for the realtime chart/card updates (Supabase Realtime
+      # postgres_changes) - the REST API above works fine without these.
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
     ports:
       - "3000:3000"
     depends_on:

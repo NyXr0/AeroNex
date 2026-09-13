@@ -3,24 +3,25 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedNumber } from "@/components/motion/animated-number";
 import { api } from "@/lib/api";
 import { formatINR } from "@/lib/utils";
 
 const ROUTE_ID = 1; // DEL-BOM - same route RouteHeroCard highlights
 const ROUTE_LABEL = "DEL-BOM";
 
-type Stat = { value: string; label: string };
+type Stat = { value: number | null; label: string; format?: (n: number) => string };
 
 // Static fallback shown until the API responds, or if it's unreachable.
 const FALLBACK: Stat[] = [
-  { value: "99.1", label: "National Airfare Index" },
-  { value: "3", label: "Routes" },
-  { value: "4", label: "Airlines" },
-  { value: "N/A", label: `Avg. price (${ROUTE_LABEL})` },
+  { value: 99.1, label: "National Airfare Index", format: (n) => n.toFixed(1) },
+  { value: 3, label: "Routes" },
+  { value: 4, label: "Airlines" },
+  { value: null, label: `Avg. price (${ROUTE_LABEL})` },
 ];
 
 export function NationalOverviewCard() {
-  const [stats, setStats] = useState(FALLBACK);
+  const [stats, setStats] = useState<Stat[]>(FALLBACK);
   const [isDemo, setIsDemo] = useState(true);
 
   useEffect(() => {
@@ -35,10 +36,10 @@ export function NationalOverviewCard() {
           ? carriers.reduce((s, c) => s + c.avg_total * c.sample_size, 0) / totalSamples
           : null;
       setStats([
-        { value: index.headline_index.toFixed(1), label: "National Airfare Index" },
-        { value: String(index.per_route.length), label: "Routes" },
-        { value: String(airlineCount), label: "Airlines" },
-        { value: avgPrice ? formatINR(avgPrice) : "N/A", label: `Avg. price (${ROUTE_LABEL})` },
+        { value: index.headline_index, label: "National Airfare Index", format: (n) => n.toFixed(1) },
+        { value: index.per_route.length, label: "Routes" },
+        { value: airlineCount, label: "Airlines" },
+        { value: avgPrice, label: `Avg. price (${ROUTE_LABEL})`, format: formatINR },
       ]);
       setIsDemo(false);
     });
@@ -56,7 +57,9 @@ export function NationalOverviewCard() {
       <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-md bg-secondary/40 p-3 shadow-neu-inset-sm">
-            <p className="tabular text-stat text-foreground">{s.value}</p>
+            <p className="tabular text-stat text-foreground">
+              {s.value === null ? "N/A" : <AnimatedNumber value={s.value} format={s.format} />}
+            </p>
             <p className="mt-1 text-caption text-muted-foreground">{s.label}</p>
           </div>
         ))}

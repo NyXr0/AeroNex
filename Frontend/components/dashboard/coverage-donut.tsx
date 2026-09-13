@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { MoreHorizontal } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AnimatedNumber } from "@/components/motion/animated-number";
 
 // Segment order matters: it's drawn as one continuous stroke-dasharray ring.
 const SEGMENTS = [
@@ -13,6 +15,7 @@ const SEGMENTS = [
 
 const RADIUS = 54;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const CONFIDENCE = 94;
 
 export function CoverageDonut() {
   let offset = 0;
@@ -27,7 +30,13 @@ export function CoverageDonut() {
       </CardHeader>
       <CardContent className="flex flex-1 flex-col items-center justify-center gap-4">
         <div className="relative h-[150px] w-[150px]">
-          <svg viewBox="0 0 130 130" className="h-full w-full -rotate-90">
+          <motion.svg
+            viewBox="0 0 130 130"
+            className="h-full w-full -rotate-90"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <circle
               cx="65"
               cy="65"
@@ -57,9 +66,11 @@ export function CoverageDonut() {
               offset += length;
               return el;
             })}
-          </svg>
+          </motion.svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="tabular text-stat text-foreground">94%</span>
+            <span className="tabular text-stat text-foreground">
+              <AnimatedNumber value={CONFIDENCE} format={(n) => `${Math.round(n)}%`} />
+            </span>
             <span className="text-caption text-muted-foreground">confidence</span>
           </div>
         </div>

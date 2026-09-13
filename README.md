@@ -40,12 +40,15 @@ never supposed to just look broken.
 
 `docker-compose.yml` + `Caddyfile` + per-service `Dockerfile`s follow
 `AeroNex_Architecture.md`'s Deployment section (postgres/api/web/caddy).
-**Not yet true to that doc**: `api` still runs the stdlib/sqlite backend
-above, not FastAPI+PostgreSQL — that migration is a matter of wrapping the
-existing `app/api/handlers.py` functions in FastAPI routers and pointing
-`app/db.py` at Postgres via a DSN env var (the sqlite schema already
-matches). None of this has been run through Docker itself; no container
-runtime was available in either build sandbox either.
+`app/db.py` now has a real Postgres path (Supabase-backed): set
+`DATABASE_URL` and every existing caller (handlers.py, provenance.py,
+live_index.py, dgca_ingest.py) transparently uses it instead of SQLite, no
+other code changes. `api` still runs the stdlib backend, not FastAPI —
+that part of the architecture doc is still aspirational. See
+`DEPLOYMENT.md` for the full deploy guide (frontend/backend/database,
+separately or via this compose file). None of this compose setup has been
+run through an actual Docker runtime in this environment (none was
+available), so test it before relying on it.
 
 ## Directory layout
 

@@ -15,6 +15,7 @@ lint-output.log
 restart-output.log
 audit-output.log
 push-output.log
+install-deps-output.log
 
 # Env
 .env
