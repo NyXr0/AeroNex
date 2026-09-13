@@ -61,7 +61,7 @@ def get_index(conn=None) -> dict:
         for r in routes:
             latest = conn.execute(
                 "SELECT index_value, window_days, computed_at FROM index_values "
-                "WHERE route_id = ? ORDER BY computed_at DESC LIMIT 1",
+                "WHERE route_id = ? ORDER BY computed_at DESC, id DESC LIMIT 1",
                 (r["id"],),
             ).fetchone()
             if latest is None:
@@ -87,10 +87,16 @@ def get_index_history(route_id: int, window_days: int, conn=None) -> dict:
     own = conn is None
     conn = conn or get_connection()
     try:
+        # Multiple compute_and_store runs on the same day share a date-only
+        # computed_at string; take only the latest (highest id) row per date
+        # so the series has one point per day, not stale duplicates.
         rows = conn.execute(
             "SELECT computed_at, index_value FROM index_values "
-            "WHERE route_id = ? AND window_days = ? ORDER BY computed_at ASC",
-            (route_id, window_days),
+            "WHERE route_id = ? AND window_days = ? AND id IN ("
+            "  SELECT MAX(id) FROM index_values WHERE route_id = ? AND window_days = ? "
+            "  GROUP BY computed_at"
+            ") ORDER BY computed_at ASC",
+            (route_id, window_days, route_id, window_days),
         ).fetchall()
         return {"route_id": route_id, "window_days": window_days,
                 "series": [{"date": r["computed_at"], "index_value": round(r["index_value"], 2)} for r in rows]}

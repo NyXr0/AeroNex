@@ -2,8 +2,17 @@
 
 import { Search, SlidersHorizontal, Bell, ChevronDown, Circle } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { useSession } from "@/lib/auth";
+
+function initialsFor(email: string | undefined): string {
+  if (!email) return "AR";
+  const name = email.split("@")[0];
+  return name.slice(0, 2).toUpperCase();
+}
 
 export function TopBar() {
+  const { session } = useSession();
+  const email = session?.user.email;
   return (
     <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-6 neu-divider-b">
       <div className="flex items-center gap-3">
@@ -48,10 +57,10 @@ export function TopBar() {
           type="button"
           className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-card hover:shadow-neu-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Avatar initials="AR" size="md" />
+          <Avatar initials={initialsFor(email)} size="md" />
           <span className="hidden text-left leading-tight sm:block">
-            <span className="block text-row text-foreground">Aditi Rao</span>
-            <span className="block text-caption text-muted-foreground">Ops Lead</span>
+            <span className="block text-row text-foreground">{email ?? "Aditi Rao"}</span>
+            <span className="block text-caption text-muted-foreground">{email ? "Signed in" : "Ops Lead"}</span>
           </span>
           <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         </button>

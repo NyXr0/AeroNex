@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { signOut } from "@/lib/auth";
 
 // Each item is a real, wired-up page - not a placeholder link back to
 // /dashboard (that was the previous nav's actual state: Routes/Compliance/
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   return (
     <aside
       className="hidden lg:flex lg:w-16 lg:flex-col lg:items-center lg:justify-between lg:bg-primary lg:py-5 neu-divider-r"
@@ -77,6 +79,10 @@ export function Sidebar() {
           type="button"
           aria-label="Log out"
           title="Log out"
+          onClick={async () => {
+            await signOut();
+            router.replace("/login");
+          }}
           className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-card hover:shadow-neu-sm hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />

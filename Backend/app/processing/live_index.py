@@ -54,8 +54,14 @@ def _flag_todays_outliers(conn: sqlite3.Connection, route_id: int, window_days: 
     fare among today's results would silently skew both get_route_detail's
     averages and, before this, the index average below. Needs >= 2 fares
     for "outlier" to mean anything; skips otherwise, same as it would with
-    any single-point sample."""
-    today = date.today().isoformat()
+    any single-point sample.
+
+    UTC, not local time: scraped_at is written in datetime.now(timezone.utc)
+    (see provenance.py), so comparing against date.today()'s LOCAL date
+    could miss rows scraped moments earlier - hit this for real right after
+    IST midnight on the first full live-scrape run, where every real fare
+    matched zero rows until both sides used UTC."""
+    today = datetime.now(timezone.utc).date().isoformat()
     rows = conn.execute(
         """SELECT f.id, f.total FROM fares f
            JOIN sources s ON s.id = f.source_id
@@ -76,8 +82,10 @@ def _flag_todays_outliers(conn: sqlite3.Connection, route_id: int, window_days: 
 def _todays_real_avg(conn: sqlite3.Connection, route_id: int, window_days: int) -> float | None:
     """Avg of TODAY's real (non-demo), non-outlier scraped fares for this
     route/window - excludes outliers same as get_route_detail's own
-    averages do, so a single premium fare doesn't skew the index either."""
-    today = date.today().isoformat()
+    averages do, so a single premium fare doesn't skew the index either.
+
+    Same UTC-vs-local fix as _flag_todays_outliers above."""
+    today = datetime.now(timezone.utc).date().isoformat()
     row = conn.execute(
         """SELECT AVG(f.total) AS avg_price FROM fares f
            JOIN sources s ON s.id = f.source_id

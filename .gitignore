@@ -20,3 +20,5 @@ install-deps-output.log
 # Env
 .env
 .env.local
+live-scrape-output.log
+Backend/data/snapshots/
