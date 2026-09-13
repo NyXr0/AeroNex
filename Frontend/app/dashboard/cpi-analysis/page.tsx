@@ -7,6 +7,8 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart } from "@/components/dashboard/line-chart";
 import { api, type CpiLinkageResponse } from "@/lib/api";
+import { generateDemoSeries } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const FALLBACK: CpiLinkageResponse = {
   mospi_reference: {
@@ -23,11 +25,25 @@ const FALLBACK: CpiLinkageResponse = {
 export default function CpiAnalysisPage() {
   const [data, setData] = useState<CpiLinkageResponse>(FALLBACK);
   const [loading, setLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     api.getCpiLinkage().then((d) => {
-      if (!cancelled && d) setData(d);
+      if (cancelled) return;
+      // Same disclosed-fallback pattern as Price Trend: backend unreachable
+      // or too little real history -> a labeled synthetic curve, never a
+      // blank chart.
+      if (d && d.aeronex_history.length >= 2) {
+        setData(d);
+        setIsDemo(false);
+      } else {
+        setData({
+          mospi_reference: FALLBACK.mospi_reference,
+          aeronex_history: generateDemoSeries("cpi-linkage").map((p) => ({ date: p.date, headline_index: p.value })),
+        });
+        setIsDemo(true);
+      }
       setLoading(false);
     });
     return () => {
@@ -78,7 +94,10 @@ export default function CpiAnalysisPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>APIx vs. MoSPI reference</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>APIx vs. MoSPI reference</CardTitle>
+              {isDemo && <Badge variant="muted">demo data</Badge>}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (

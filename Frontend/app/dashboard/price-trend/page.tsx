@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart } from "@/components/dashboard/line-chart";
 import { Badge } from "@/components/ui/badge";
 import { api, type RoutesResponse } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, generateDemoSeries } from "@/lib/utils";
 
 const FALLBACK_ROUTES: RoutesResponse = {
   routes: [
@@ -25,6 +25,7 @@ export default function PriceTrendPage() {
   const [windowDays, setWindowDays] = useState(15);
   const [series, setSeries] = useState<{ date: string; index_value: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +45,16 @@ export default function PriceTrendPage() {
     setLoading(true);
     api.getIndexHistory(routeId, windowDays).then((d) => {
       if (cancelled) return;
-      setSeries(d?.series ?? []);
+      // Backend unreachable, or not enough real history yet for this pair -
+      // fall back to a disclosed synthetic curve instead of an empty chart
+      // (same "never go blank" pattern as api.ts's own getJSON fallback).
+      if (d && d.series.length >= 2) {
+        setSeries(d.series);
+        setIsDemo(false);
+      } else {
+        setSeries(generateDemoSeries(`${routeId}-${windowDays}`).map((p) => ({ date: p.date, index_value: p.value })));
+        setIsDemo(true);
+      }
       setLoading(false);
     });
     return () => {
@@ -111,12 +121,15 @@ export default function PriceTrendPage() {
               <CardTitle>
                 {currentRoute?.route ?? "Route"} &middot; T+{windowDays}
               </CardTitle>
-              {changePct !== null && (
-                <Badge variant={changePct >= 0 ? "accent" : "outline"}>
-                  {changePct >= 0 ? "+" : ""}
-                  {changePct.toFixed(1)}% over window
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {isDemo && <Badge variant="muted">demo data</Badge>}
+                {changePct !== null && (
+                  <Badge variant={changePct >= 0 ? "accent" : "outline"}>
+                    {changePct >= 0 ? "+" : ""}
+                    {changePct.toFixed(1)}% over window
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
