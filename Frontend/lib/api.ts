@@ -6,14 +6,29 @@
 // blank just because the backend isn't running yet.
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
+// Render's free tier spins the backend down after ~15 min idle, so the
+// first request after a quiet period fails outright (connection refused,
+// which the browser reports as a CORS error since no headers come back)
+// while it wakes up - typically 10-40s. Without a retry, that one failed
+// request would permanently strand every dashboard page on its static
+// demo/fallback data for the rest of the visit, since nothing re-triggers
+// a refetch until a real Realtime write happens. Retrying a few times
+// with backoff rides out the cold start instead.
+const RETRY_DELAYS_MS = [1500, 3000, 6000, 10000, 10000];
+
 async function getJSON<T>(path: string): Promise<T | null> {
-  try {
-    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null; // backend not running, or unreachable - not an error the UI should crash on
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+      if (res.ok) return (await res.json()) as T;
+    } catch {
+      // backend asleep/unreachable this attempt - fall through to retry/backoff below
+    }
+    if (attempt < RETRY_DELAYS_MS.length) {
+      await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
+    }
   }
+  return null; // exhausted retries - genuinely offline, not just cold-starting
 }
 
 export type IndexResponse = {
