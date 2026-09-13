@@ -77,3 +77,39 @@ builds, runs, and is committed — not new feature work.
 - [~] Every core flow verified end-to-end via live browser click-through —
       verified indirectly (compile logs + API smoke test), not by manual
       browser interaction (tooling restriction, see "Still broken" above)
+
+## Production-readiness pass #2 (180-min protocol, 2026-09-13 continued)
+
+Checkpoint 1 (~15 min elapsed): Phase 1-3 groundwork.
+
+- Backend: re-ran all 7 self-check scripts (`backtest`, `index_calc`,
+  `live_index`, `outliers`, `dgca_ingest`, `provenance`, `test_parser`) —
+  all pass. Smoke-tested all 10 API handler functions directly against the
+  live sqlite DB (`get_index`, `get_index_history`, `get_route_detail`,
+  `get_compliance`, `get_backtest`, `get_methodology`, `get_coverage`,
+  `get_routes`, `get_windows_overview`, `get_cpi_linkage`) — all return
+  valid JSON-serializable data. Confirmed `server.py`'s error handling:
+  unknown routes -> 404, missing route detail -> 404, any handler
+  exception -> 500 with a message (never a raw traceback/hang).
+- Added `Frontend/.env.example` documenting the one optional env var
+  (`NEXT_PUBLIC_API_BASE`) — previously undocumented. No secrets exist
+  anywhere in the repo (grepped for API keys/passwords/tokens - none).
+- **Added a real ESLint setup** (previously missing entirely): flat
+  `eslint.config.mjs` (next/core-web-vitals + next/typescript), `lint`
+  script in `package.json`, `eslint`/`eslint-config-next`/`@eslint/eslintrc`
+  devDependencies. Installed for real via `npm install` on the actual
+  Windows host (the device-bash sandbox has no registry access) and ran
+  `next lint`: **zero warnings or errors**.
+- **Ran `npm audit`**: 1 high-severity finding — PostCSS (XSS / path
+  traversal via `sourceMappingURL`) pulled in transitively through
+  `next`'s bundled copy of postcss. Fix requires `npm audit fix --force`,
+  which bumps `next` 15 -> 16.3.5, a breaking major-version change.
+  **Deliberately not applied**: this is a build-time-only tool
+  vulnerability (PostCSS's CSS/source-map *parser*), and AeroNex never
+  processes attacker-supplied CSS or exposes source maps to end users at
+  runtime — there is no reachable attack path in this app. Forcing a
+  breaking Next.js major-version upgrade this close to done, for a
+  vulnerability with no actual exploit path here, is worse risk than
+  leaving it. Documented rather than silently ignored; a real next step
+  if this ships beyond the hackathon is to redo the Next 16 migration on
+  its own branch with full re-verification.
