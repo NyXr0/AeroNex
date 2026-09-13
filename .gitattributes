@@ -1,0 +1,5 @@
+# Raw scraped-page HTML snapshots kept for scrape audit/provenance - not
+# app code. Tell GitHub Linguist to exclude them from language stats
+# (otherwise ~79MB of raw HTML swamps the actual React/Python source).
+Backend/data/snapshots/*.html linguist-generated=true
+Backend/data/snapshots/*.html linguist-vendored=true
