@@ -5,17 +5,31 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { api, type IndexResponse } from "@/lib/api";
+import { generateDemoSeries } from "@/lib/utils";
 
-const FALLBACK: IndexResponse = {
-  headline_index: 100.0,
-  base_year: 2024,
-  per_route: [
-    { route: "DEL-BOM", index_value: 100.0, window_days: 15, dgca_weight: 0.23 },
-    { route: "DEL-BLR", index_value: 100.0, window_days: 15, dgca_weight: 0.16 },
-    { route: "BOM-BLR", index_value: 100.0, window_days: 15, dgca_weight: 0.14 },
-  ],
-};
+// Same disclosed-fallback rule as the other dashboard pages: backend
+// unreachable -> a labeled synthetic reading, never a flat, undisclosed
+// "100.0 for every route" that looks like broken live data instead of demo
+// data. Reuses generateDemoSeries (already deterministic per seed) instead
+// of a second random-number generator.
+function demoIndex(): IndexResponse {
+  const routes = [
+    { route: "DEL-BOM", window_days: 15, dgca_weight: 0.23 },
+    { route: "DEL-BLR", window_days: 15, dgca_weight: 0.16 },
+    { route: "BOM-BLR", window_days: 15, dgca_weight: 0.14 },
+  ];
+  const per_route = routes.map((r) => ({
+    ...r,
+    index_value: generateDemoSeries(`${r.route}-index`, 10).slice(-1)[0].value,
+  }));
+  const weightedSum = per_route.reduce((s, r) => s + r.dgca_weight * r.index_value, 0);
+  const weightTotal = per_route.reduce((s, r) => s + r.dgca_weight, 0);
+  return { headline_index: weightedSum / weightTotal, base_year: 2024, per_route };
+}
+
+const FALLBACK: IndexResponse = demoIndex();
 
 // Same formula text as Backend/app/api/handlers.py's METHODOLOGY_TEXT -
 // static because the formula itself doesn't change per request, matching
@@ -25,11 +39,18 @@ const FORMULA =
 
 export default function AirfareIndexPage() {
   const [data, setData] = useState<IndexResponse>(FALLBACK);
+  const [isDemo, setIsDemo] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     api.getIndex().then((d) => {
-      if (!cancelled && d) setData(d);
+      if (cancelled) return;
+      if (d) {
+        setData(d);
+        setIsDemo(false);
+      } else {
+        setIsDemo(true);
+      }
     });
     return () => {
       cancelled = true;
@@ -58,6 +79,7 @@ export default function AirfareIndexPage() {
                 {data.headline_index?.toFixed(1) ?? "—"}
               </p>
               <p className="text-caption text-muted-foreground">APIx &middot; base year {data.base_year} = 100</p>
+              {isDemo && <Badge variant="muted">demo data</Badge>}
             </CardContent>
           </Card>
 

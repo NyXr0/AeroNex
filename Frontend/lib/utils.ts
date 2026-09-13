@@ -64,3 +64,17 @@ export function liveJitter(seed: string, tick: number, amplitude = 1.5): number 
   return Math.sin(tick * 0.6) * amplitude * 0.7 + (rand - 0.5) * amplitude;
 }
 
+/**
+ * Deterministic demo fare split (base/tax/fees/total) for the Fare
+ * Breakdown page's fallback - same "never a dead-end empty state" rule as
+ * generateDemoSeries, just shaped for a single composed reading instead of
+ * a time series. Reuses the same seeded PRNG so it's reproducible per route.
+ */
+export function generateDemoFareComposition(seed: string): { base: number; tax: number; fees: number; total: number } {
+  const rand = mulberry32(hashSeed(seed));
+  const base = Math.round(4200 + rand() * 2500);
+  const tax = Math.round(base * (0.12 + rand() * 0.04));
+  const fees = Math.round(300 + rand() * 400);
+  return { base, tax, fees, total: base + tax + fees };
+}
+

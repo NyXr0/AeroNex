@@ -113,3 +113,46 @@ Checkpoint 1 (~15 min elapsed): Phase 1-3 groundwork.
   leaving it. Documented rather than silently ignored; a real next step
   if this ships beyond the hackathon is to redo the Next 16 migration on
   its own branch with full re-verification.
+
+Checkpoint 2 (~25 min elapsed): real browser click-through (Phase 2).
+
+Started both servers fresh (API on :8000, dev server on :3001) and did an
+actual click-through of all 7 nav pages in the built-in browser on the
+same machine the servers run on - the "top next step" PROGRESS.md flagged
+after the last pass as the one verification layer prior sessions couldn't
+reach. Found and fixed two real bugs this surfaced:
+
+- **`/dashboard/fare-breakdown`**: when the backend API was unreachable,
+  `composition` stayed `null` and the page rendered a dead-end "No fare
+  breakdown available for this route yet." with no indication anything
+  was wrong or that other pages have a demo mode. Fixed: falls back to a
+  deterministic synthetic fare split (new `generateDemoFareComposition` in
+  lib/utils.ts, reusing the existing seeded PRNG) labeled with the same
+  "demo estimate" badge the component already had for a different case
+  (real-but-demo-seeded data), plus an honest caption distinguishing the
+  two ("no real fares available" vs. "bundled total only, split is a
+  documented estimate").
+- **`/dashboard/airfare-index`**: same bug, worse presentation - the
+  static fallback showed a *flat 100.0 for every single route* with
+  **zero disclosure**, which reads as broken/frozen live data rather than
+  demo data. Fixed: added an `isDemo` flag + "demo data" badge, and the
+  fallback numbers now come from `generateDemoSeries` (already used
+  elsewhere) per route instead of a suspicious flat constant.
+
+Both fixes verified live in the browser (not just code-reviewed): screenshots
+confirm the badges render and the numbers are no longer identical/flat.
+`tsc --noEmit` and a full `next build` both clean afterward.
+
+**Tooling note**: the built-in browser pane blocks page-JS `fetch()` calls
+to `localhost` ports (`net::ERR_BLOCKED_BY_CLIENT`) even though direct
+navigation to the same URL works - confirmed this is the browser
+sandbox's own anti-SSRF policy, not an AeroNex/CORS bug, by fetching
+`http://localhost:8000/api/v1/routes` directly (200 OK, correct JSON) vs.
+the same fetch from page JS (blocked). This means every page was actually
+exercised in **demo-fallback mode** during this click-through, which is
+exactly what surfaced the two undisclosed-fallback bugs above. The "real
+data" path is still only verified indirectly (backend handler smoke
+tests + confirmed correct JSON via direct navigation) - a live end-to-end
+click-through with the backend actually wired up needs a browser without
+this sandboxing (e.g. the user's own Chrome), which no development
+sandbox this session had access to could reach.

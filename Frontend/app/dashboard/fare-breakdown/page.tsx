@@ -7,7 +7,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api, type RoutesResponse, type FareComposition } from "@/lib/api";
-import { cn, formatINR } from "@/lib/utils";
+import { cn, formatINR, generateDemoFareComposition } from "@/lib/utils";
 
 const FALLBACK_ROUTES: RoutesResponse = {
   routes: [
@@ -48,7 +48,15 @@ export default function FareBreakdownPage() {
     setLoading(true);
     api.getRouteDetail(routeId).then((d) => {
       if (cancelled) return;
-      setComposition(d?.fare_composition ?? null);
+      // Same disclosed-fallback rule as the other dashboard pages: backend
+      // unreachable, or this route has no real fare-split rows yet -> a
+      // labeled synthetic split, never a dead-end empty state.
+      if (d?.fare_composition) {
+        setComposition(d.fare_composition);
+      } else {
+        const demo = generateDemoFareComposition(`fare-${routeId}`);
+        setComposition({ ...demo, currency: "INR", sample_size: 0, is_demo_estimate: true });
+      }
       setLoading(false);
     });
     return () => {
@@ -130,9 +138,13 @@ export default function FareBreakdownPage() {
                 </p>
 
                 <p className="text-caption text-muted-foreground">
-                  Averaged across {composition.sample_size} non-outlier fares.
+                  {composition.sample_size > 0
+                    ? `Averaged across ${composition.sample_size} non-outlier fares.`
+                    : "No real fares available for this route yet (backend unreachable or no data)."}
                   {composition.is_demo_estimate &&
-                    " Real EaseMyTrip scrapes only expose a bundled total today (no per-fare detail-page scrape yet) - this split is a documented estimate applied to demo-seeded data, not a claim about real fare structure."}
+                    (composition.sample_size > 0
+                      ? " Real EaseMyTrip scrapes only expose a bundled total today (no per-fare detail-page scrape yet) - this split is a documented estimate applied to demo-seeded data, not a claim about real fare structure."
+                      : " Showing a synthetic estimate so this page never dead-ends - not a claim about real fare structure.")}
                 </p>
               </div>
             )}
