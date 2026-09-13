@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart } from "@/components/dashboard/line-chart";
 import { Badge } from "@/components/ui/badge";
 import { api, type RoutesResponse } from "@/lib/api";
-import { cn, generateDemoSeries } from "@/lib/utils";
+import { cn, generateDemoSeries, liveJitter } from "@/lib/utils";
 
 const FALLBACK_ROUTES: RoutesResponse = {
   routes: [
@@ -26,6 +26,7 @@ export default function PriceTrendPage() {
   const [series, setSeries] = useState<{ date: string; index_value: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,8 +63,23 @@ export default function PriceTrendPage() {
     };
   }, [routeId, windowDays]);
 
-  const first = series[0]?.index_value;
-  const last = series[series.length - 1]?.index_value;
+  // Demo data is static history plus a live-looking "current reading" -
+  // only the fallback curve ticks, real API data never gets synthetic motion.
+  useEffect(() => {
+    if (!isDemo) return;
+    const id = setInterval(() => setTick((t) => t + 1), 2200);
+    return () => clearInterval(id);
+  }, [isDemo]);
+
+  const displaySeries =
+    isDemo && series.length > 0
+      ? series.map((p, i) =>
+          i === series.length - 1 ? { ...p, index_value: p.index_value + liveJitter(`${routeId}-${windowDays}`, tick) } : p
+        )
+      : series;
+
+  const first = displaySeries[0]?.index_value;
+  const last = displaySeries[displaySeries.length - 1]?.index_value;
   const changePct = first && last ? ((last - first) / first) * 100 : null;
   const currentRoute = routes.routes.find((r) => r.id === routeId);
 
@@ -135,7 +151,7 @@ export default function PriceTrendPage() {
               {loading ? (
                 <p className="py-8 text-center text-caption text-muted-foreground">Loading&hellip;</p>
               ) : (
-                <LineChart series={series.map((p) => ({ date: p.date, value: p.index_value }))} />
+                <LineChart series={displaySeries.map((p) => ({ date: p.date, value: p.index_value }))} />
               )}
             </CardContent>
           </Card>

@@ -7,7 +7,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart } from "@/components/dashboard/line-chart";
 import { api, type CpiLinkageResponse } from "@/lib/api";
-import { generateDemoSeries } from "@/lib/utils";
+import { generateDemoSeries, liveJitter } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 const FALLBACK: CpiLinkageResponse = {
@@ -26,6 +26,7 @@ export default function CpiAnalysisPage() {
   const [data, setData] = useState<CpiLinkageResponse>(FALLBACK);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +52,24 @@ export default function CpiAnalysisPage() {
     };
   }, []);
 
-  const current = data.aeronex_history[data.aeronex_history.length - 1]?.headline_index ?? null;
+  // Demo data ticks a live-looking "current reading"; real API history never
+  // gets synthetic motion (same rule as Price Trend).
+  useEffect(() => {
+    if (!isDemo) return;
+    const id = setInterval(() => setTick((t) => t + 1), 2200);
+    return () => clearInterval(id);
+  }, [isDemo]);
+
+  const displayHistory =
+    isDemo && data.aeronex_history.length > 0
+      ? data.aeronex_history.map((p, i) =>
+          i === data.aeronex_history.length - 1
+            ? { ...p, headline_index: p.headline_index + liveJitter("cpi-linkage", tick) }
+            : p
+        )
+      : data.aeronex_history;
+
+  const current = displayHistory[displayHistory.length - 1]?.headline_index ?? null;
   const { mospi_reference } = data;
 
   return (
@@ -86,7 +104,7 @@ export default function CpiAnalysisPage() {
           </Card>
           <Card>
             <CardContent className="flex flex-col items-center justify-center gap-1 py-6">
-              <p className="tabular text-stat text-foreground">{data.aeronex_history.length}</p>
+              <p className="tabular text-stat text-foreground">{displayHistory.length}</p>
               <p className="text-caption text-muted-foreground">days of AeroNex history plotted</p>
             </CardContent>
           </Card>
@@ -104,7 +122,7 @@ export default function CpiAnalysisPage() {
               <p className="py-8 text-center text-caption text-muted-foreground">Loading&hellip;</p>
             ) : (
               <LineChart
-                series={data.aeronex_history.map((p) => ({ date: p.date, value: p.headline_index }))}
+                series={displayHistory.map((p) => ({ date: p.date, value: p.headline_index }))}
                 referenceValue={mospi_reference.value}
                 referenceLabel={`MoSPI ${mospi_reference.value}`}
               />

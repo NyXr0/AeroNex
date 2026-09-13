@@ -61,8 +61,8 @@ export function LineChart({
             </text>
           </>
         )}
-        <path d={path} fill="none" stroke="hsl(var(--color-accent))" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        <circle cx={x(series.length - 1)} cy={y(last.value)} r="3.5" className="fill-accent" />
+        <path d={path} fill="none" stroke="hsl(var(--color-accent))" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" className="transition-[d] duration-[1400ms] ease-in-out" />
+        <circle cx={x(series.length - 1)} cy={y(last.value)} r="3.5" className="fill-accent transition-[cy] duration-[1400ms] ease-in-out" />
       </svg>
       <div className="mt-1 flex justify-between text-caption text-muted-foreground">
         <span>{series[0].date}</span>

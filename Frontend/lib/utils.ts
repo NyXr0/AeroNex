@@ -51,3 +51,16 @@ export function generateDemoSeries(seed: string, days = 45, base = 100): { date:
   }
   return out;
 }
+
+/**
+ * Small live-looking oscillation around `base`, driven by a tick counter -
+ * makes a demo chart's most-recent point visibly "breathe" every couple of
+ * seconds instead of sitting frozen, without fabricating drift in the
+ * historical points behind it. Deterministic per (seed, tick) so it's still
+ * reproducible, just animated across re-renders as `tick` increments.
+ */
+export function liveJitter(seed: string, tick: number, amplitude = 1.5): number {
+  const rand = mulberry32(hashSeed(`${seed}:${tick}`))();
+  return Math.sin(tick * 0.6) * amplitude * 0.7 + (rand - 0.5) * amplitude;
+}
+
