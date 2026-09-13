@@ -14,7 +14,7 @@ python seed_demo_data.py
 python run_api.py 8000
 
 # Terminal 2 - frontend
-cd Frontend/aeronex-dashboard-ui
+cd Frontend
 npm install
 npm run dev
 # open http://localhost:3000 -> redirects to /dashboard
@@ -34,7 +34,7 @@ never supposed to just look broken.
 | Fare data on screen | **Seeded demo data** (`Backend/seed_demo_data.py`), not live-scraped yet |
 | Live Playwright scraper (`Backend/app/scraping/live/`) | Written, unit-tested against a captured sample, never run end-to-end (no internet in the build sandbox) — **you need to run this once**, see `Backend/README.md` |
 | 3 locked routes | Provisional (DGCA-weight-based pick), pending the live-scrape-reliability observation the Build Order actually asks for |
-| Frontend (Next.js/Tailwind/shadcn dashboard + methodology page) | Real, wired to the API with graceful fallback; `npm install` not verified in either sandbox (no npm registry access) |
+| Frontend (Next.js/Tailwind/shadcn dashboard + methodology page) | Real, wired to the API with graceful fallback; `npm install`/`npm run build`/`npm run lint` all verified clean |
 
 ## Production deployment
 
@@ -53,6 +53,6 @@ runtime was available in either build sandbox either.
 AreoNex/
   Backend/    FastAPI-shaped API (currently stdlib), scraping (live + historical),
               MAD/index/backtest processing, sqlite DB
-  Frontend/aeronex-dashboard-ui/   Next.js dashboard + methodology page
+  Frontend/   Next.js dashboard + methodology page
   docker-compose.yml, Caddyfile, */Dockerfile   deployment (untested, see above)
 ```
