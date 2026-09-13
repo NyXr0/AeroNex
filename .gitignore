@@ -12,6 +12,8 @@ node_modules/
 # Build/run artifacts from this session's Windows launchers
 build-output.log
 lint-output.log
+restart-output.log
+audit-output.log
 
 # Env
 .env

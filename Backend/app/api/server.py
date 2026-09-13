@@ -55,8 +55,11 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == "/api/v1/index":
                 return self._send_json(200, handlers.get_index(conn))
             if parsed.path == "/api/v1/index/history":
-                route_id = int(query.get("route_id", ["0"])[0])
-                window_days = int(query.get("window_days", ["30"])[0])
+                try:
+                    route_id = int(query.get("route_id", ["0"])[0])
+                    window_days = int(query.get("window_days", ["30"])[0])
+                except ValueError:
+                    return self._send_json(400, {"error": "route_id and window_days must be integers"})
                 return self._send_json(200, handlers.get_index_history(route_id, window_days, conn))
             match = ROUTE_DETAIL_RE.match(parsed.path)
             if match:
