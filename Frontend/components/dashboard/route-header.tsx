@@ -1,8 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 const SOURCES = [
   { initials: "IN", label: "IndiGo" },
@@ -28,10 +26,6 @@ export function RouteHeader() {
             <Avatar key={s.label} initials={s.initials} ring title={s.label} aria-label={s.label} />
           ))}
         </div>
-        <Button variant="accent" size="sm">
-          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-          Add source
-        </Button>
       </div>
     </div>
   );

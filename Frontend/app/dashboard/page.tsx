@@ -6,8 +6,9 @@ import { ScrapeSessionCard } from "@/components/dashboard/scrape-session-card";
 import { CoverageDonut } from "@/components/dashboard/coverage-donut";
 import { StatCards } from "@/components/dashboard/stat-cards";
 import { StorageUpsellCard } from "@/components/dashboard/storage-upsell-card";
-import { ScheduleCalendar } from "@/components/dashboard/schedule-calendar";
-import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
+import { MarketObservations } from "@/components/dashboard/market-observations";
+import { FlightPriceCalendar } from "@/components/dashboard/flight-price-calendar";
+import { NationalOverviewCard } from "@/components/dashboard/national-overview-card";
 import { SourcesList } from "@/components/dashboard/sources-list";
 import { DataStatusBanner } from "@/components/dashboard/data-status-banner";
 
@@ -35,20 +36,21 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Center column: live session, donut, schedule */}
+          {/* Center column: national overview, live session, donut, market observations */}
           <div className="flex flex-col gap-4 lg:col-span-5">
+            <NationalOverviewCard />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ScrapeSessionCard />
               <CoverageDonut />
             </div>
             <div className="flex-1">
-              <ScheduleCalendar />
+              <MarketObservations />
             </div>
           </div>
 
-          {/* Right column: activity + sources */}
+          {/* Right column: price calendar + sources */}
           <div className="flex flex-col gap-4 lg:col-span-4">
-            <ActivityHeatmap />
+            <FlightPriceCalendar />
             <SourcesList />
           </div>
         </main>
