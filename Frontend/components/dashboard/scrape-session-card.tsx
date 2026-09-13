@@ -65,7 +65,7 @@ export function ScrapeSessionCard() {
           {SUBTASKS.map(({ label, seconds, icon: Icon }) => (
             <li
               key={label}
-              className="flex items-center gap-2.5 rounded-md border border-border px-3 py-2.5"
+              className="flex items-center gap-2.5 rounded-md shadow-neu-inset-sm px-3 py-2.5"
             >
               <span
                 className={cn(

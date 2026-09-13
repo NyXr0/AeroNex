@@ -80,8 +80,8 @@ export default function FareBreakdownPage() {
               type="button"
               onClick={() => setRouteId(r.id)}
               className={cn(
-                "rounded-full border border-border px-3 py-1.5 text-row cursor-pointer",
-                r.id === routeId ? "bg-accent text-accent-foreground border-accent" : "text-muted-foreground hover:bg-secondary"
+                "rounded-full px-3 py-1.5 text-row cursor-pointer shadow-neu-inset-sm",
+                r.id === routeId ? "bg-accent text-accent-foreground shadow-neu-sm" : "text-muted-foreground hover:bg-card hover:shadow-neu-sm"
               )}
             >
               {r.route}

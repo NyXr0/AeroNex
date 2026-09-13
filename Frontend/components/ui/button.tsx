@@ -7,10 +7,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        accent: "bg-accent text-accent-foreground hover:bg-accent/90",
-        outline: "border border-border bg-transparent text-foreground hover:bg-secondary",
-        ghost: "text-muted-foreground hover:bg-secondary hover:text-foreground",
-        icon: "text-muted-foreground hover:bg-secondary hover:text-foreground rounded-full",
+        accent: "bg-accent text-accent-foreground shadow-neu-sm hover:bg-accent/90 active:shadow-neu-inset-sm",
+        outline: "bg-card text-foreground shadow-neu-sm hover:text-accent active:shadow-neu-inset-sm",
+        ghost: "text-muted-foreground hover:bg-card hover:shadow-neu-sm hover:text-foreground active:shadow-neu-inset-sm",
+        icon: "text-muted-foreground hover:bg-card hover:shadow-neu-sm hover:text-foreground active:shadow-neu-inset-sm rounded-full",
       },
       size: {
         default: "h-9 px-4",

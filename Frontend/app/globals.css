@@ -24,6 +24,16 @@
   --color-on-destructive: 0 0% 100%;
   --color-ring: 160 72% 79%;
 
+  /* Neumorphism: soft dual shadows derived from the existing dark palette,
+     not a new color scheme -- see DESIGN_TOKENS.md for the flat baseline
+     these extend. */
+  --neu-dark: 220 65% 2%;    /* deeper than --color-background */
+  --neu-light: 224 32% 15%; /* lighter than --color-card */
+  --shadow-neu: 8px 8px 16px hsl(var(--neu-dark) / 0.55), -6px -6px 14px hsl(var(--neu-light) / 0.4);
+  --shadow-neu-sm: 4px 4px 9px hsl(var(--neu-dark) / 0.5), -3px -3px 8px hsl(var(--neu-light) / 0.35);
+  --shadow-neu-inset: inset 4px 4px 9px hsl(var(--neu-dark) / 0.5), inset -3px -3px 8px hsl(var(--neu-light) / 0.3);
+  --shadow-neu-inset-sm: inset 3px 3px 6px hsl(var(--neu-dark) / 0.45), inset -2px -2px 5px hsl(var(--neu-light) / 0.25);
+
   --radius-lg: 20px;
   --radius-md: 14px;
   --radius-sm: 10px;
@@ -50,6 +60,15 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Soft-UI divider: replaces a hard 1px border with a faint highlight edge
+   plus a diffuse drop shadow, matching the neumorphic surfaces below. */
+.neu-divider-b {
+  box-shadow: 0 1px 0 hsl(var(--neu-light) / 0.08), 0 10px 20px -16px hsl(var(--neu-dark) / 0.7);
+}
+.neu-divider-r {
+  box-shadow: 1px 0 0 hsl(var(--neu-light) / 0.08), 10px 0 20px -16px hsl(var(--neu-dark) / 0.7);
 }
 
 @media (prefers-reduced-motion: reduce) {

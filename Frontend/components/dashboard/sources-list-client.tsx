@@ -36,7 +36,7 @@ export function SourcesListClient({ fallback }: { fallback: Row[] }) {
   return (
     <>
     {fallbackLog && (
-      <p className="mb-2 rounded-md border border-border bg-secondary/40 px-2 py-1.5 text-caption text-muted-foreground">
+      <p className="mb-2 rounded-md bg-secondary/40 shadow-neu-inset-sm px-2 py-1.5 text-caption text-muted-foreground">
         Last live attempt ({fallbackLog.origin}-{fallbackLog.destination}, T+{fallbackLog.window_days}):{" "}
         {fallbackLog.disclosure.map((d, i) => (
           <span key={i}>
@@ -50,7 +50,7 @@ export function SourcesListClient({ fallback }: { fallback: Row[] }) {
       {rows.map(({ name, lastScraped }) => {
         const Icon = SOURCE_ICONS[name] ?? DEFAULT_ICON;
         return (
-          <li key={name} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-secondary/60">
+          <li key={name} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-card hover:shadow-neu-sm">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground">
               <Icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
             </span>

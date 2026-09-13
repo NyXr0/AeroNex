@@ -16,7 +16,7 @@ export function Avatar({ initials, size = "md", ring, className, ...props }: Ava
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-secondary font-semibold text-foreground",
+        "flex shrink-0 items-center justify-center rounded-full bg-secondary shadow-neu-sm font-semibold text-foreground",
         size === "sm" ? "h-6 w-6 text-[10px]" : "h-9 w-9 text-caption",
         ring && "ring-2 ring-background",
         className

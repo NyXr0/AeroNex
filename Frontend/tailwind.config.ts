@@ -46,6 +46,12 @@ const config: Config = {
         md: "var(--radius-md)",
         lg: "var(--radius-lg)",
       },
+      boxShadow: {
+        neu: "var(--shadow-neu)",
+        "neu-sm": "var(--shadow-neu-sm)",
+        "neu-inset": "var(--shadow-neu-inset)",
+        "neu-inset-sm": "var(--shadow-neu-inset-sm)",
+      },
       spacing: {
         "0.5": "2px",
         "1": "4px",

@@ -33,7 +33,7 @@ export function Sidebar() {
   const pathname = usePathname();
   return (
     <aside
-      className="hidden lg:flex lg:w-16 lg:flex-col lg:items-center lg:justify-between lg:border-r lg:border-border lg:bg-primary lg:py-5"
+      className="hidden lg:flex lg:w-16 lg:flex-col lg:items-center lg:justify-between lg:bg-primary lg:py-5 neu-divider-r"
       aria-label="Primary"
     >
       <div className="flex flex-col items-center gap-6">
@@ -52,9 +52,9 @@ export function Sidebar() {
                 aria-label={label}
                 title={label}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground cursor-pointer",
+                  "flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-card hover:shadow-neu-sm hover:text-foreground cursor-pointer",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  active && "bg-secondary text-accent"
+                  active && "bg-card text-accent shadow-neu-inset-sm"
                 )}
               >
                 <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -69,7 +69,7 @@ export function Sidebar() {
           type="button"
           aria-label="Settings"
           title="Settings"
-          className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-card hover:shadow-neu-sm hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Settings className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>
@@ -77,7 +77,7 @@ export function Sidebar() {
           type="button"
           aria-label="Log out"
           title="Log out"
-          className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-secondary hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-card hover:shadow-neu-sm hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>

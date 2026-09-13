@@ -80,8 +80,8 @@ export default function PriceTrendPage() {
                 type="button"
                 onClick={() => setRouteId(r.id)}
                 className={cn(
-                  "rounded-full border border-border px-3 py-1.5 text-row cursor-pointer",
-                  r.id === routeId ? "bg-accent text-accent-foreground border-accent" : "text-muted-foreground hover:bg-secondary"
+                  "rounded-full px-3 py-1.5 text-row cursor-pointer shadow-neu-inset-sm",
+                  r.id === routeId ? "bg-accent text-accent-foreground shadow-neu-sm" : "text-muted-foreground hover:bg-card hover:shadow-neu-sm"
                 )}
               >
                 {r.route}
@@ -95,8 +95,8 @@ export default function PriceTrendPage() {
                 type="button"
                 onClick={() => setWindowDays(w)}
                 className={cn(
-                  "rounded-full border border-border px-3 py-1.5 text-row cursor-pointer",
-                  w === windowDays ? "bg-accent text-accent-foreground border-accent" : "text-muted-foreground hover:bg-secondary"
+                  "rounded-full px-3 py-1.5 text-row cursor-pointer shadow-neu-inset-sm",
+                  w === windowDays ? "bg-accent text-accent-foreground shadow-neu-sm" : "text-muted-foreground hover:bg-card hover:shadow-neu-sm"
                 )}
               >
                 T+{w}

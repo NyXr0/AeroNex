@@ -31,23 +31,23 @@ export function DataStatusBanner() {
     live: {
       icon: Wifi,
       text: "Live data — serving real scraped fares from the AeroNex API.",
-      className: "border-accent/40 bg-accent/10 text-accent",
+      className: "bg-accent/10 text-accent",
     },
     demo: {
       icon: FlaskConical,
       text: "Demo data — seeded sample fares (see seed_demo_data.py). The live Playwright scraper hasn't run on this machine yet.",
-      className: "border-border bg-secondary/60 text-muted-foreground",
+      className: "bg-secondary/60 text-muted-foreground",
     },
     offline: {
       icon: WifiOff,
       text: "Backend API not reachable — showing static placeholder data. Start it with: python run_api.py (from AeroNex/Backend).",
-      className: "border-destructive/40 bg-destructive/10 text-destructive",
+      className: "bg-destructive/10 text-destructive",
     },
   }[status];
 
   const Icon = config.icon;
   return (
-    <div className={`mx-4 mt-4 flex items-center gap-2 rounded-md border px-3 py-2 text-caption lg:mx-6 ${config.className}`}>
+    <div className={`mx-4 mt-4 flex items-center gap-2 rounded-md px-3 py-2 text-caption lg:mx-6 shadow-neu-inset-sm ${config.className}`}>
       <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       <span>{config.text}</span>
     </div>

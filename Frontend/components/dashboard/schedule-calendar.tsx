@@ -57,7 +57,7 @@ const EVENTS: ScrapeEvent[] = [
 
 const TONE_CLASSES: Record<ScrapeEvent["tone"], string> = {
   accent: "bg-accent text-accent-foreground",
-  solid: "bg-secondary text-foreground border border-border",
+  solid: "bg-card text-foreground shadow-neu-inset-sm",
   muted: "bg-secondary/50 text-muted-foreground",
 };
 
