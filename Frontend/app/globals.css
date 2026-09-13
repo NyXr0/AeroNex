@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Tokens are stored as raw HSL triplets (no hsl() wrapper) so Tailwind's
+  `hsl(var(--x) / <alpha-value>)` pattern can apply opacity modifiers
+  (e.g. bg-accent/10) without a separate rgba token per color.
+*/
+:root {
+  --color-background: 222 47% 6%;        /* #0B0F1A */
+  --color-foreground: 210 33% 97%;       /* #F5F7FA */
+  --color-card: 226 40% 11%;             /* #12172A */
+  --color-card-foreground: 210 33% 97%;
+  --color-primary: 226 35% 16%;          /* #1C2338 */
+  --color-secondary: 227 34% 20%;        /* #232B45 */
+  --color-accent: 160 72% 79%;           /* #9FF3DA */
+  --color-on-accent: 165 60% 9%;         /* #06251D */
+  --color-muted: 227 34% 15%;            /* #1A2036 */
+  --color-muted-foreground: 220 15% 62%; /* #8B93A7 */
+  --color-border: 226 27% 20%;           /* #262C42 */
+  --color-destructive: 0 84% 60%;        /* #EF4444 */
+  --color-on-destructive: 0 0% 100%;
+  --color-ring: 160 72% 79%;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  --font-dm-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+  This product is intentionally dark-only (an ops/monitoring tool, matching the
+  reference), so :root carries the dark palette directly rather than gating it
+  behind a .dark class. Kept as a documented, deliberate choice — not an
+  oversight — see DESIGN_TOKENS.md §2.
+*/
+
+* {
+  border-color: hsl(var(--color-border));
+}
+
+body {
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  font-family: var(--font-dm-sans);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

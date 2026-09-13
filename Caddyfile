@@ -1,0 +1,12 @@
+# Local/demo config - no domain, so no automatic HTTPS cert to manage the
+# night before a demo (that's the whole reason Caddy was picked over nginx
+# per the architecture doc). Point this at a real domain for automatic TLS
+# in an actual deployment: replace ":80" with "yourdomain.example".
+:80 {
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+    handle {
+        reverse_proxy web:3000
+    }
+}

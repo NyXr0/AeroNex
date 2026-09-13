@@ -1,0 +1,23 @@
+{
+  "origin": "BOM",
+  "destination": "BLR",
+  "window_days": 30,
+  "disclosure": [
+    {
+      "source": "IndiGo (direct)",
+      "status": "not_yet_implemented",
+      "action": "skipped"
+    },
+    {
+      "source": "Air India (direct)",
+      "status": "not_yet_implemented",
+      "action": "skipped"
+    },
+    {
+      "source": "EaseMyTrip",
+      "status": "ok",
+      "action": "used"
+    }
+  ],
+  "source_used": "EaseMyTrip"
+}

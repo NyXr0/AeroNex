@@ -1,0 +1,20 @@
+# ponytail: placeholder sample, NOT the real DGCA file. The real monthly city-pair
+# passenger CSVs live at https://www.dgca.gov.in (raw PDFs) or the pre-cleaned
+# mirror https://github.com/Vonter/india-aviation-traffic (CSV back to 2015).
+# Neither sandbox here has internet to download it, so this sample uses
+# plausible relative traffic-share figures (order-of-magnitude, from the
+# research phase's route-basket findings in AeroNex_Research_Phase_Report.md)
+# just so dgca_ingest.py has something real to parse end-to-end.
+# Swap this file for a real downloaded DGCA/Vonter-mirror CSV of the same
+# columns and nothing else needs to change.
+origin,destination,month,passengers
+DEL,BOM,2026-07,410000
+DEL,BLR,2026-07,295000
+BOM,BLR,2026-07,260000
+DEL,CCU,2026-07,180000
+BLR,HYD,2026-07,150000
+MAA,DEL,2026-07,140000
+DEL,HYD,2026-07,120000
+DEL,PNQ,2026-07,95000
+DEL,AMD,2026-07,90000
+CCU,BLR,2026-07,75000

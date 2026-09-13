@@ -1,0 +1,61 @@
+# Deployment shape per AeroNex_Architecture.md's Deployment section.
+#
+# ponytail: `api` here runs the STDLIB http.server + sqlite backend that
+# actually exists in this repo today (Backend/app/api/server.py), not the
+# FastAPI+PostgreSQL design the architecture doc describes - neither
+# package could be pip-installed while this was built (no PyPI access in
+# either build sandbox). `postgres` is still declared below because it's
+# one env-var swap away once the API layer is ported to FastAPI/SQLAlchemy
+# (Backend/app/db.py's schema already matches these tables) - it just isn't
+# wired to anything yet. Don't `docker compose up` expecting Postgres data
+# to show up in the dashboard until that port happens.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aeronex
+      POSTGRES_USER: aeronex
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aeronex"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./Backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - api_data:/app/data
+    command: ["python", "run_api.py", "8000"]
+
+  web:
+    build:
+      context: ./Frontend/aeronex-dashboard-ui
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - web
+      - api
+
+volumes:
+  postgres_data:
+  api_data:
+  caddy_data:
