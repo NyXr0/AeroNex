@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart } from "@/components/dashboard/line-chart";
 import { api, type CpiLinkageResponse } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { generateDemoSeries, liveJitter } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,6 +28,7 @@ export default function CpiAnalysisPage() {
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [tick, setTick] = useState(0);
+  const realtimeTick = useRealtimeRefresh(["index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,7 +52,7 @@ export default function CpiAnalysisPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [realtimeTick]);
 
   // Demo data ticks a live-looking "current reading"; real API history never
   // gets synthetic motion (same rule as Price Trend).

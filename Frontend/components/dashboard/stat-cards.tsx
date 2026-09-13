@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { api } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 
 type Stat = { value: number; label: string; format?: (n: number) => string };
 
@@ -16,6 +17,7 @@ const FALLBACK: Stat[] = [
 
 export function StatCards() {
   const [stats, setStats] = useState<Stat[]>(FALLBACK);
+  const tick = useRealtimeRefresh(["fares", "index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,7 +36,7 @@ export function StatCards() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1 lg:gap-3">

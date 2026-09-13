@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { api, type WindowsOverviewResponse } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { formatINR } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -37,6 +38,7 @@ const FALLBACK: WindowsOverviewResponse = {
 export default function WindowsPage() {
   const [data, setData] = useState<WindowsOverviewResponse>(FALLBACK);
   const [isDemo, setIsDemo] = useState(false);
+  const tick = useRealtimeRefresh(["fares", "index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,7 +54,7 @@ export default function WindowsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">

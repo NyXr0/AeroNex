@@ -5,6 +5,7 @@ import { TrendingDown, TrendingUp, ArrowLeftRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api, type WindowsOverviewResponse } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { formatINR, generateDemoSeries } from "@/lib/utils";
 
 type RouteCurve = WindowsOverviewResponse["routes"][number];
@@ -63,6 +64,7 @@ function extremes(routes: RouteCurve[]) {
 export function MarketObservations() {
   const [data, setData] = useState<WindowsOverviewResponse>(demoOverview);
   const [isDemo, setIsDemo] = useState(true);
+  const tick = useRealtimeRefresh(["fares", "index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +76,7 @@ export function MarketObservations() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   const ex = extremes(data.routes);
 

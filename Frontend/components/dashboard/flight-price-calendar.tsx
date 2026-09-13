@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { cn, formatINR, generateDemoSeries } from "@/lib/utils";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -36,6 +37,7 @@ function demoDays() {
 export function FlightPriceCalendar() {
   const [days, setDays] = useState(demoDays);
   const [isDemo, setIsDemo] = useState(true);
+  const tick = useRealtimeRefresh(["fares", "index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +62,7 @@ export function FlightPriceCalendar() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   const prices = days.map((d) => d.price);
   const min = Math.min(...prices);

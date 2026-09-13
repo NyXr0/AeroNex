@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api, type RoutesResponse, type FareComposition } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { cn, formatINR, generateDemoFareComposition } from "@/lib/utils";
 
 const FALLBACK_ROUTES: RoutesResponse = {
@@ -29,6 +30,7 @@ export default function FareBreakdownPage() {
   const [routeId, setRouteId] = useState(1);
   const [composition, setComposition] = useState<FareComposition | null>(null);
   const [loading, setLoading] = useState(true);
+  const tick = useRealtimeRefresh(["fares"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,7 +64,7 @@ export default function FareBreakdownPage() {
     return () => {
       cancelled = true;
     };
-  }, [routeId]);
+  }, [routeId, tick]);
 
   const currentRoute = routes.routes.find((r) => r.id === routeId);
 

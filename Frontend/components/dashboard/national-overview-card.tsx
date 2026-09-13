@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { api } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { formatINR } from "@/lib/utils";
 
 const ROUTE_ID = 1; // DEL-BOM - same route RouteHeroCard highlights
@@ -23,6 +24,7 @@ const FALLBACK: Stat[] = [
 export function NationalOverviewCard() {
   const [stats, setStats] = useState<Stat[]>(FALLBACK);
   const [isDemo, setIsDemo] = useState(true);
+  const tick = useRealtimeRefresh(["fares", "index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +48,7 @@ export function NationalOverviewCard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   return (
     <Card>

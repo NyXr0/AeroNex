@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api, type IndexResponse } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { generateDemoSeries } from "@/lib/utils";
 
 // Same disclosed-fallback rule as the other dashboard pages: backend
@@ -40,6 +41,7 @@ const FORMULA =
 export default function AirfareIndexPage() {
   const [data, setData] = useState<IndexResponse>(FALLBACK);
   const [isDemo, setIsDemo] = useState(true);
+  const tick = useRealtimeRefresh(["fares", "index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +57,7 @@ export default function AirfareIndexPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tick]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">

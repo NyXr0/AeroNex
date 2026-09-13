@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart } from "@/components/dashboard/line-chart";
 import { Badge } from "@/components/ui/badge";
 import { api, type RoutesResponse } from "@/lib/api";
+import { useRealtimeRefresh } from "@/lib/use-realtime-refresh";
 import { cn, generateDemoSeries, liveJitter } from "@/lib/utils";
 
 const FALLBACK_ROUTES: RoutesResponse = {
@@ -27,6 +28,7 @@ export default function PriceTrendPage() {
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [tick, setTick] = useState(0);
+  const realtimeTick = useRealtimeRefresh(["index_values"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +63,7 @@ export default function PriceTrendPage() {
     return () => {
       cancelled = true;
     };
-  }, [routeId, windowDays]);
+  }, [routeId, windowDays, realtimeTick]);
 
   // Demo data is static history plus a live-looking "current reading" -
   // only the fallback curve ticks, real API data never gets synthetic motion.
