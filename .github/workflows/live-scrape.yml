@@ -1,0 +1,38 @@
+name: Live fare scrape
+
+# Runs the existing Backend/run_live_scrape.py entrypoint on a schedule so
+# fares/index_values keep getting new rows in Postgres (Supabase), which is
+# what makes the dashboard's Realtime-driven charts actually move instead of
+# sitting frozen at whatever was last migrated in.
+#
+# ponytail: GitHub-hosted runners have normal outbound internet (unlike the
+# sandboxed dev shell run_spike.py's docstring warns about), so this is the
+# free place to run it - no Render cron plan needed.
+on:
+  schedule:
+    - cron: "0 */2 * * *"   # every 2 hours, UTC
+  workflow_dispatch: {}       # manual "Run workflow" button for on-demand runs
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: Backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run live scrape
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python run_live_scrape.py
