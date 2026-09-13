@@ -14,6 +14,7 @@ build-output.log
 lint-output.log
 restart-output.log
 audit-output.log
+push-output.log
 
 # Env
 .env
